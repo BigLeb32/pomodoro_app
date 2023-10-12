@@ -1,17 +1,87 @@
 import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.12
-
+import QtQuick.Controls.Universal 2.12
+import QtMultimedia 
 
 ApplicationWindow {
     title: "Pomodoro App"
     visible: true
     width: 360
-    height: 520
-    property int defaultTime: 25;
-    property int remainingTime: defaultTime
+    height: 450
+    property int defaultTime: 25
+    property int remainingTime: defaultTime * 60
+    property real labelFontSize: 20
+    property real buttonMinimumSize: 90
+    property int timerInterval: 1000
     
-     
+    function formatTime(time){
+        return (time < 10 ? '0' + time : time);
+    }
+    
+    function updateTimer() {
+        remainingTime--;
+        var minutes = Math.floor(remainingTime / 60);
+        var seconds = remainingTime % 60;
+        text.text = formatTime(minutes) + ":" + formatTime(seconds);
+        
+        if (remainingTime === 0) {
+            timer.stop();
+            audioEndSignal.play(); 
+            startButton.enabled = true;
+        }
+    }
+    
+    function resetTimer(){
+        remainingTime = defaultTime * 60;
+        text.text = formatTime(defaultTime) + ":00";
+    }
+    
+    
+    
+    Popup {
+        id: timePopup
+        x: parent.width / 2 - width / 2
+        y: parent.height / 2 - height / 2
+        width: 200
+        height: 100
+        modal: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        
+        onOpened: { 
+            timeInput.forceActiveFocus()
+            
+        }
+        
+        ColumnLayout {
+            anchors.centerIn: parent
+            
+            TextField {
+                id: timeInput
+                Layout.alignment: Qt.AlignHCenter 
+                Layout.fillWidth: true
+                inputMask: '99'
+                Keys.onReturnPressed: {
+                    submitButton.forceActiveFocus()
+                    
+                }
+            }
+            
+            Button {
+                id: submitButton
+                text: "Submit"
+                Layout.alignment: Qt.AlignHCenter 
+                Layout.fillWidth: true
+                
+                onClicked: {
+                    defaultTime = parseInt(timeInput.text);
+                    timePopup.close();
+                }
+            }
+        }
+        
+    }
+    
     Action {
         id: optionsMenuAction
         onTriggered: optionsMenu.open()
@@ -20,7 +90,6 @@ ApplicationWindow {
     header: ToolBar {
         RowLayout {
             
-            spacing: 20
             anchors.fill: parent
             
             Label {
@@ -37,21 +106,18 @@ ApplicationWindow {
             ToolButton {
                 action: optionsMenuAction
                 icon.source: "qrc:/assets/icons/menu.png"
-
+                
                 Menu {
                     id: optionsMenu
                     x: parent.width - width
                     transformOrigin: Menu.TopRight
                     
+                    
                     Action {
-                        text: "Settings"
+                        text: "Set default time"
+                        onTriggered: timePopup.open()
                     }
-                    Action {
-                        text: "Help"
-                    }
-                    Action {
-                        text: "About"
-                    }
+                    
                 }
                 
             }
@@ -62,53 +128,72 @@ ApplicationWindow {
     Rectangle {
         id: rectangle
         anchors.fill: parent
+        anchors.topMargin: -65
+        
         Text {
             id: text
-            // set remainingTime as the initial value format to "25:00"
-            text: (defaultTime < 10 ? '0' + defaultTime : defaultTime) + ":00"
+            text: formatTime(defaultTime) + ":00"
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: 40
+            font.pixelSize: 60
             anchors.centerIn: parent
+            anchors.topMargin: -900
         }
         
-        Button {
-            id: startButton
-            text: "Start"
+        RowLayout {
             anchors.bottom: parent.bottom
+            anchors.bottomMargin: 30
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 100
-            onClicked: {
-                remainingTime = 25; // Reset to 25 minutes.
-                updateTimer();
-                timer.start();
-                startButton.enabled = false; // Disable the button.
+            spacing: 15
+            
+            Button {
+                id: startButton
+                font.pixelSize: 18
+                Layout.minimumHeight: buttonMinimumSize
+                Layout.minimumWidth: buttonMinimumSize
+                text: "Start"
+                onClicked: {
+                    timer.start();
+                    startButton.enabled = false;
+                }
             }
-        }
-        
-        Timer {
-            id: timer
-            interval: 60000 // 60 seconds
-            repeat: true
-            onTriggered: updateTimer()
+            
+            Button {
+                font.pixelSize: 18
+                Layout.minimumHeight: buttonMinimumSize
+                Layout.minimumWidth: buttonMinimumSize
+                text: "Pause"
+                onClicked: {
+                    timer.stop()
+                    startButton.enabled = true;
+                }
+            }
+            
+            Button {
+                font.pixelSize: 18
+                Layout.minimumHeight: buttonMinimumSize
+                Layout.minimumWidth: buttonMinimumSize
+                text: "Stop"
+                onClicked: {
+                    timer.stop();
+                    resetTimer();
+                    startButton.enabled = true;
+                }
+            }
         }
     }
     
-    function updateTimer() {
-        remainingTime--;
-        var minutes = parseInt(remainingTime % 60);
-        var seconds = parseInt(remainingTime / 60);
-        
-        text.text = (minutes < 10 ? '0' + minutes : minutes) + ":" 
-                + (seconds < 10 ? '0' + seconds : seconds);
-        
-        if (remainingTime === 0) {
-            timer.stop();
-            startButton.enabled = true;
-        }
+    Timer {
+        id: timer
+        interval: timerInterval 
+        repeat: true
+        onTriggered: updateTimer()
+    }
+    
+    MediaPlayer {
+        id: audioEndSignal
+        audioOutput: AudioOutput {}
+        source: "qrc:/assets/sounds/end.mp3"   
     }
     
 }
-
-
-

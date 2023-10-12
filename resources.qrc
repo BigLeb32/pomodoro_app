@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>qml/Main.qml</file>
         <file>assets/icons/menu.png</file>
+        <file>assets/sounds/end.mp3</file>
     </qresource>
 </RCC>
