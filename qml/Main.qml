@@ -29,6 +29,9 @@ ApplicationWindow {
             timer.stop();
             audioEndSignal.play(); 
             startButton.enabled = true;
+            reminderWindow.showFullScreen()
+            reminderTimer.start();
+            
         }
     }
     
@@ -76,6 +79,9 @@ ApplicationWindow {
                 onClicked: {
                     defaultTime = parseInt(timeInput.text);
                     timePopup.close();
+                    timer.stop();
+                    resetTimer();
+                    startButton.enabled = true;
                 }
             }
         }
@@ -180,6 +186,34 @@ ApplicationWindow {
                     startButton.enabled = true;
                 }
             }
+        }
+    }
+    
+    //This will be your separate window.
+    Window {
+        id: reminderWindow
+        width: 200 
+        height: 100   
+        visible: false //Don't show it until the button is pressed.    
+        title: "Reminder Window"
+        modality:Qt.ApplicationModal //Makes it modal - users must first close this window to interact with the main window.
+        color: "black" // To make the window background transparent.
+        opacity: 0.7 // To make the window background transparent.
+        
+        Text {
+            text: "Time's up!"
+            color: "white"
+            font.pixelSize: 60 // Making the text bigger.
+            anchors.centerIn: parent
+        }
+    }
+    
+    Timer {
+        id: reminderTimer
+        interval: 1000; repeat: false; running: false
+        
+        onTriggered: {
+             reminderWindow.close()
         }
     }
     
