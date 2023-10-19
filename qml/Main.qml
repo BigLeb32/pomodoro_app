@@ -210,7 +210,7 @@ ApplicationWindow {
     
     Timer {
         id: reminderTimer
-        interval: 1000; repeat: false; running: false
+        interval: 2000; repeat: false; running: false
         
         onTriggered: {
              reminderWindow.close()

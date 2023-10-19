@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(pomodoro VERSION 0.1 LANGUAGES CXX)
+project(pomodoro_app VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -17,19 +17,19 @@ set(PROJECT_SOURCES
         resources.qrc
 )
 
-qt_add_executable(pomodoro
+qt_add_executable(pomodoro_app
     ${PROJECT_SOURCES})
 
-target_link_libraries(pomodoro
+target_link_libraries(pomodoro_app
   PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick)
 
 
 include(GNUInstallDirs)
-install(TARGETS pomodoro
+install(TARGETS pomodoro_app
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_import_qml_plugins(pomodoro)
-    qt_finalize_executable(pomodoro)
+    qt_import_qml_plugins(pomodoro_app)
+    qt_finalize_executable(pomodoro_app)
 endif()
